@@ -73,11 +73,13 @@ namespace Sitecore.Support.Commerce.Core
             var cache = await this._cachePipeline.Run(new EnvironmentCacheArgument { CacheName = entityCachePolicy.CacheName }, context.CommerceContext.GetPipelineContextOptions());
             if (entityCachePolicy.CacheAsEntity)
             {
-                await cache.Set(itemKey, new Cachable<CommerceEntity>(arg, 1), entryOptions);
+                // 389445: Clone cached value so that every request has its own entity version
+                var clone = arg.DeepClone();
+                await cache.Set(itemKey, new Cachable<CommerceEntity>(clone, 1), entryOptions);
 
                 context.Logger.LogInformation($"Core.MemCache.CE.Add.{typeName}: ItemKey={itemKey} cache:{cache.Name}");
 
-                return arg;
+                return clone;
             }
             else
             {

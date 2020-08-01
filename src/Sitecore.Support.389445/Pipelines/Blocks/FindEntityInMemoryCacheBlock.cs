@@ -69,15 +69,18 @@ namespace Sitecore.Support.Commerce.Core
                     context.Logger.LogDebug($"Core.MemCache.CE.Hit.{typeName}: ItemKey={itemKey}");
                     context.AddModel(new CacheHit(itemKey));
 
+                    // 389445: Clone cached value so that every request has its own entity version
+                    var clone = data.DeepClone();
+
                     context.CommerceContext.AddObject(new FoundEntity
                     {
                         EntityId = arg.EntityId,
-                        Entity = data,
+                        Entity = clone,
                         EntityVersion = data.EntityVersion,
                         FoundInCache = true,
                         CachedAsEntity = true
                     });
-                    arg.Entity = data;
+                    arg.Entity = clone;
                 }
             }
             else
